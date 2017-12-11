@@ -1,0 +1,156 @@
+{
+    "intents": [
+        {
+            "name": "PhoneSearch",
+            "samples": [
+                "I would like to buy a phone",
+                "I would like to buy an {model}",
+                "I would like to buy an {model} for less than {price} dollars",
+                "help me find a phone",
+                "search for a phone",
+                "search for a {model}",
+                "search for a {model} for less than {price} dollars",
+                "I would like to buy a {model}",
+                "I would like to buy a {model} between {priceLow} and {price}",
+                "search for a {model} for between {price} and {priceLow} dollars"
+            ],
+            "slots": [
+                {
+                    "name": "model",
+                    "type": "ModelTypes",
+                    "samples": []
+                },
+                {
+                    "name": "price",
+                    "type": "AMAZON.NUMBER",
+                    "samples": []
+                },
+                {
+                    "name": "priceLow",
+                    "type": "AMAZON.NUMBER",
+                    "samples": []
+                }
+            ]
+        }
+    ],
+    "types": [
+        {
+            "name": "ModelTypes",
+            "values": [
+                {
+                    "name": {
+                        "value": "iphone 6s+",
+                        "synonyms": []
+                    }
+                },
+                {
+                    "name": {
+                        "value": "Moto Z2 Force",
+                        "synonyms": []
+                    }
+                },
+                {
+                    "name": {
+                        "value": "google pixel 2",
+                        "synonyms": []
+                    }
+                },
+                {
+                    "name": {
+                        "value": "iphone 6s plus",
+                        "synonyms": []
+                    }
+                },
+                {
+                    "name": {
+                        "value": "iphone",
+                        "synonyms": []
+                    }
+                },
+                {
+                    "name": {
+                        "value": "samsung Galaxy S8",
+                        "synonyms": []
+                    }
+                }
+            ]
+        }
+    ],
+    "prompts": [
+        {
+            "id": "Elicit.Intent-PhoneSearch.IntentSlot-model",
+            "promptVersion": "1.0",
+            "definitionVersion": "1.0",
+            "variations": [
+                {
+                    "type": "PlainText",
+                    "value": "What Model are you looking for?"
+                }
+            ]
+        },
+        {
+            "id": "Elicit.Intent-PhoneSearch.IntentSlot-price",
+            "promptVersion": "1.0",
+            "definitionVersion": "1.0",
+            "variations": [
+                {
+                    "type": "PlainText",
+                    "value": "How much do you want to spend?"
+                }
+            ]
+        },
+        {
+            "id": "Elicit.Intent-PhoneSearch.IntentSlot-priceLow",
+            "promptVersion": "1.0",
+            "definitionVersion": "1.0",
+            "variations": [
+                {
+                    "type": "PlainText",
+                    "value": "What is the least you want to pay?"
+                }
+            ]
+        }
+    ],
+    "dialog": {
+        "version": "1.0",
+        "intents": [
+            {
+                "name": "PhoneSearch",
+                "confirmationRequired": false,
+                "prompts": {},
+                "slots": [
+                    {
+                        "name": "model",
+                        "type": "ModelTypes",
+                        "elicitationRequired": true,
+                        "confirmationRequired": false,
+                        "prompts": {
+                            "elicit":
+                                "Elicit.Intent-PhoneSearch.IntentSlot-model"
+                        }
+                    },
+                    {
+                        "name": "price",
+                        "type": "AMAZON.NUMBER",
+                        "elicitationRequired": true,
+                        "confirmationRequired": false,
+                        "prompts": {
+                            "elicit":
+                                "Elicit.Intent-PhoneSearch.IntentSlot-price"
+                        }
+                    },
+                    {
+                        "name": "priceLow",
+                        "type": "AMAZON.NUMBER",
+                        "elicitationRequired": true,
+                        "confirmationRequired": false,
+                        "prompts": {
+                            "elicit":
+                                "Elicit.Intent-PhoneSearch.IntentSlot-priceLow"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,20 @@
+service: lex-search-bot
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+
+environment:
+  s3key: SEM38249746013CE90E9C546C8EED3BF2F5D
+
+functions:
+  lexSearch:
+    handler: handler.lexSearch
+
+plugins:
+  - serverless-finch
+
+custom:
+  client:
+    bucketName: lex-client-static
+    distributionFolder: client/dist

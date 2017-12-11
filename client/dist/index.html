@@ -1,0 +1,175 @@
+<link rel="stylesheet" href="https://gitcdn.link/repo/Chalarangelo/mini.css/master/dist/mini-default.min.css">
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+   <head>
+      <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+      <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0" />
+      <title>Search Bot</title>
+      <script src="https://sdk.amazonaws.com/js/aws-sdk-2.41.0.min.js"></script>
+      <style language="text/css">
+         input::placeholder {
+         color: #ccc;
+         }
+         p.userRequest {
+         margin: 4px;
+         padding: 4px 10px 4px 10px;
+         border-radius: 4px;
+         min-width: 50%;
+         max-width: 85%;
+         float: left;
+         background-color: #7d7;
+         }
+         p.lexResponse {
+         margin: 4px;
+         padding: 4px 10px 4px 10px;
+         border-radius: 4px;
+         text-align: right;
+         min-width: 50%;
+         max-width: 85%;
+         float: right;
+         background-color: #bbf;
+         }
+         p.lexError {
+         margin: 4px;
+         padding: 4px 10px 4px 10px;
+         border-radius: 4px;
+         text-align: right;
+         min-width: 50%;
+         max-width: 85%;
+         float: right;
+         background-color: #f77;
+         }
+      </style>
+   </head>
+   <body>
+      <header class="sticky">
+         <div class="logo">Phone Shopper</div>
+      </header>
+      <div class="container">
+         <div class="row">
+            <div class="col-sm-12 col-md-3 col-lg-3">
+               <form style="height:86%" id="chatform" onsubmit="return pushChat();">
+                  <div id="conversation" style="height:93%;overflow-y: scroll"></div>
+                  <div class="input-group vertical">
+                     <input type="text" id="userText" value="" placeholder="Help me find a phone">
+                  </div>
+               </form>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-9">
+               <div class="col-lg row" id="cards" style="-webkit-justify-content: space-around; justify-content: space-around;">
+               </div>
+            </div>
+         </div>
+      </div>
+      <script type="text/javascript">
+         document.getElementById('userText').focus();
+         AWS.config.region = 'us-east-1';
+         AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+             IdentityPoolId: 'us-east-1:40f92beb-319d-487a-b422-03ceb84bdad1'
+         });
+         
+         let lexruntime = new AWS.LexRuntime();
+         let lexUserId = 'giftfinder-bot-' + Date.now();
+         let sessionAttributes = {};
+         
+         function pushChat() {
+             let userTextText = document.getElementById('userText');
+             if (
+                 userTextText &&
+                 userTextText.value &&
+                 userTextText.value.trim().length > 0
+             ) {
+                 let userText = userTextText.value.trim();
+                 userTextText.value = '...';
+                 userTextText.locked = true;
+         
+                 let params = {
+                     botAlias: '$LATEST',
+                     botName: 'GiftFinder',
+                     inputText: userText,
+                     userId: lexUserId,
+                     sessionAttributes: sessionAttributes
+                 };
+                 showRequest(userText);
+         
+                 lexruntime.postText(params, function(err, data) {
+                     if (err) {
+                         console.log(err, err.stack);
+                         showError('Error:  ' + err.message);
+                     }
+                     if (data) {
+                         sessionAttributes = data.sessionAttributes;
+                         showResponse(data);
+                     }
+                     userTextText.value = '';
+                     userTextText.locked = false;
+                 });
+             }
+             return false;
+         }
+         
+         function showRequest(reqText) {
+             let conversationDiv = document.getElementById('conversation');
+             let requestPara = document.createElement('P');
+             requestPara.className = 'userRequest';
+             requestPara.appendChild(document.createTextNode(reqText));
+             conversationDiv.appendChild(requestPara);
+             conversationDiv.scrollTop = conversationDiv.scrollHeight;
+         }
+         
+         function showResponse(lexResponse) {
+             let conversationDiv = document.getElementById('conversation');
+             let responsePara = document.createElement('P');
+             responsePara.className = 'lexResponse';
+         
+             if (lexResponse.message) {
+                 responsePara.appendChild(document.createTextNode(lexResponse.message));
+                 responsePara.appendChild(document.createElement('br'));
+             }
+         
+             conversationDiv.appendChild(responsePara);
+             conversationDiv.scrollTop = conversationDiv.scrollHeight;
+         
+             if (lexResponse.dialogState === 'Fulfilled') {
+                 let sessionData = JSON.parse(b64DecodeUnicode(lexResponse.sessionAttributes.data));
+                 
+                 let cardDiv = document.getElementById('cards');
+                 cardDiv.innerHTML = '';
+         
+                 for (i = 0; i < 6; i++) {
+                     phoneCard = sessionData.results[i]
+                     let newDiv = document.createElement('div');
+         
+                     newDiv.setAttribute('class', 'card');
+                     let header = `<p class="section double-padded" style="text-align:center;background-color:black;color:white;">${phoneCard.site}</p>`
+                     let link = `<a href="${phoneCard.url}">`
+                     let image = `<figure><img src="${phoneCard.image}" class="section media"></figure></a>`
+                     let name = `<p class="section double-padded" style="text-align:center;"><font size="1">${phoneCard.name}</font></p>`
+                     let price = `<p class="section double-padded" style="text-align:center;">$${phoneCard.price}</p>`
+                     
+                     newDiv.innerHTML = header+link+image+name+price
+                     cardDiv.appendChild(newDiv);
+                 }
+             }
+         }
+         
+         function showError(errText) {
+             let conversationDiv = document.getElementById('conversation');
+             let errorPara = document.createElement('P');
+             errorPara.className = 'lexError';
+             errorPara.appendChild(document.createTextNode(errText));
+             conversationDiv.appendChild(errorPara);
+             conversationDiv.scrollTop = conversationDiv.scrollHeight;
+         }
+         
+         //fix for atob
+         function b64DecodeUnicode(str) {
+             return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+             }).join(''))
+         }
+         
+      </script>
+   </body>
+</html>
