@@ -1,7 +1,7 @@
 # Phone Finder Lex Bot
 
 **Bot Location:**
-[http://lex-client-static.s3-website-us-east-1.amazonaws.com]()
+[http://lex-client-static.s3-website-us-east-1.amazonaws.com](http://lex-client-static.s3-website-us-east-1.amazonaws.com)
 
 **Deploy lambda**
 
